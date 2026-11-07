@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Autonomous Agent Document Service</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.5;
+      color: #24292f;
+      background-color: #f6f8fa;
+      margin: 0;
+      padding: 24px 16px;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #ffffff;
+      border: 1px solid #d0d7de;
+      border-radius: 6px;
+      padding: 32px;
+    }
+    header {
+      margin-bottom: 24px;
+      border-bottom: 1px solid #d0d7de;
+      padding-bottom: 16px;
+    }
+    h1 {
+      font-size: 24px;
+      font-weight: 600;
+      margin: 0 0 8px 0;
+      color: #1f2328;
+    }
+    .subtitle {
+      color: #656d76;
+      font-size: 14px;
+      margin: 0;
+    }
+    .example-buttons {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    button {
+      font-family: inherit;
+      cursor: pointer;
+      border-radius: 6px;
+      font-size: 14px;
+      padding: 6px 14px;
+      border: 1px solid #d0d7de;
+      background-color: #f6f8fa;
+      color: #24292f;
+      font-weight: 500;
+      transition: background-color 0.15s ease;
+    }
+    button:hover:not(:disabled) {
+      background-color: #eaeef2;
+    }
+    button:focus-visible {
+      outline: 2px solid #0969da;
+      outline-offset: 1px;
+    }
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    .btn-primary {
+      background-color: #1f4e79;
+      color: #ffffff;
+      border-color: #1f4e79;
+      padding: 8px 18px;
+      font-size: 15px;
+    }
+    .btn-primary:hover:not(:disabled) {
+      background-color: #163857;
+      border-color: #163857;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+    textarea {
+      width: 100%;
+      height: 120px;
+      padding: 10px 12px;
+      font-family: inherit;
+      font-size: 14px;
+      line-height: 1.4;
+      border: 1px solid #d0d7de;
+      border-radius: 6px;
+      resize: vertical;
+      color: #1f2328;
+      background-color: #ffffff;
+    }
+    textarea:focus {
+      outline: 2px solid #0969da;
+      border-color: #0969da;
+    }
+    .form-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 6px;
+    }
+    .char-count {
+      font-size: 12px;
+      color: #656d76;
+    }
+    .char-count.limit-near {
+      color: #d1242f;
+    }
+    .status-box {
+      margin-top: 24px;
+      padding: 16px;
+      border: 1px solid #d0d7de;
+      border-radius: 6px;
+      background-color: #f6f8fa;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+    }
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid #d0d7de;
+      border-top-color: #1f4e79;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .error-box {
+      margin-top: 24px;
+      padding: 14px 16px;
+      background-color: #ffebe9;
+      border: 1px solid #ff8182;
+      border-radius: 6px;
+      color: #cf222e;
+      font-size: 14px;
+    }
+    .error-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .result-container {
+      margin-top: 28px;
+      border-top: 1px solid #d0d7de;
+      padding-top: 20px;
+    }
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 12px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .result-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin: 0;
+      color: #1f2328;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 12px;
+      background-color: #ddf4ff;
+      color: #0969da;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .section-block {
+      margin-bottom: 20px;
+    }
+    .section-heading {
+      font-size: 15px;
+      font-weight: 600;
+      margin: 0 0 8px 0;
+      color: #24292f;
+    }
+    p.summary-text {
+      font-size: 14px;
+      color: #333333;
+      margin: 0;
+      line-height: 1.6;
+    }
+    ul.assumptions-list {
+      margin: 0;
+      padding-left: 20px;
+      font-size: 14px;
+      color: #333333;
+    }
+    ul.assumptions-list li {
+      margin-bottom: 4px;
+    }
+    table.task-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 8px;
+    }
+    table.task-table th, table.task-table td {
+      border: 1px solid #d0d7de;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    table.task-table th {
+      background-color: #f6f8fa;
+      font-weight: 600;
+    }
+    .status-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+    .status-done {
+      background-color: #2da44e;
+    }
+    .status-failed {
+      background-color: #cf222e;
+    }
+    .meta-line {
+      font-size: 13px;
+      color: #656d76;
+      margin-top: 12px;
+    }
+    .warning-box {
+      margin-top: 16px;
+      padding: 12px 16px;
+      background-color: #fff8c5;
+      border: 1px solid #d4a72c;
+      border-radius: 6px;
+      color: #734f00;
+      font-size: 14px;
+    }
+    .warning-box strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+    .download-action {
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid #eaeef2;
+    }
+    a.download-btn {
+      display: inline-block;
+      background-color: #1f4e79;
+      color: #ffffff;
+      padding: 10px 20px;
+      font-size: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      border-radius: 6px;
+      transition: background-color 0.15s ease;
+    }
+    a.download-btn:hover {
+      background-color: #163857;
+    }
+    a.download-btn:focus-visible {
+      outline: 2px solid #0969da;
+      outline-offset: 2px;
+    }
+    footer {
+      margin-top: 32px;
+      padding-top: 16px;
+      border-top: 1px solid #d0d7de;
+      font-size: 13px;
+      color: #656d76;
+      text-align: center;
+    }
+    footer a {
+      color: #0969da;
+      text-decoration: none;
+    }
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <header>
+      <h1>Autonomous Agent Document Service</h1>
+      <p class="subtitle">Plans, drafts, reviews, and compiles structured Word documents from business requests.</p>
+    </header>
+
+    <section aria-labelledby="examples-label">
+      <div id="examples-label" style="display:none;">Example requests</div>
+      <div class="example-buttons">
+        <button type="button" id="btnStandard">Load standard example</button>
+        <button type="button" id="btnComplex">Load complex example</button>
+      </div>
+    </section>
+
+    <form id="agentForm" onsubmit="event.preventDefault(); handleSubmit();">
+      <div class="form-group">
+        <label for="requestInput">Business Request</label>
+        <textarea id="requestInput" name="request" maxlength="2000" placeholder="Enter your business document requirements..."></textarea>
+        <div class="form-footer">
+          <span class="char-count" id="charCount">0 / 2000</span>
+          <button type="submit" class="btn-primary" id="btnGenerate">Generate</button>
+        </div>
+      </div>
+    </form>
+
+    <div id="statusBox" class="status-box" style="display: none;" role="status">
+      <div class="spinner" aria-hidden="true"></div>
+      <span>Planning, writing and reviewing. This can take up to a minute.</span>
+    </div>
+
+    <div id="errorBox" class="error-box" style="display: none;" role="alert">
+      <div class="error-title">Request failed</div>
+      <div id="errorMessage"></div>
+    </div>
+
+    <section id="resultContainer" class="result-container" style="display: none;" aria-live="polite">
+      <div class="result-header">
+        <h2 class="result-title" id="resTitle"></h2>
+        <span class="badge" id="resDocType"></span>
+      </div>
+
+      <div class="section-block">
+        <h3 class="section-heading">Summary</h3>
+        <p class="summary-text" id="resSummary"></p>
+      </div>
+
+      <div class="section-block">
+        <h3 class="section-heading">Assumptions &amp; Decisions</h3>
+        <ul class="assumptions-list" id="resAssumptions"></ul>
+      </div>
+
+      <div class="section-block">
+        <h3 class="section-heading">Tasks Executed</h3>
+        <table class="task-table">
+          <thead>
+            <tr>
+              <th style="width: 60px;">ID</th>
+              <th>Task Title</th>
+              <th style="width: 120px;">Status</th>
+            </tr>
+          </thead>
+          <tbody id="resTasksBody"></tbody>
+        </table>
+      </div>
+
+      <div class="section-block">
+        <h3 class="section-heading">Review</h3>
+        <p class="summary-text" id="resReview"></p>
+        <ul class="assumptions-list" id="resReviewIssues" style="margin-top: 6px;"></ul>
+      </div>
+
+      <div class="meta-line" id="resProviders"></div>
+
+      <div id="resIncompleteWarning" class="warning-box" style="display: none;" role="alert">
+        <strong>Incomplete Document</strong>
+        <span id="resIncompleteText"></span>
+      </div>
+
+      <div class="download-action">
+        <a id="resDownloadLink" class="download-btn" href="#" download>Download .docx</a>
+      </div>
+    </section>
+
+    <footer>
+      <span>Autonomous Agent Service &middot; <a href="/docs">Interactive API Docs (Swagger)</a></span>
+    </footer>
+  </main>
+
+  <script>
+    const STANDARD_EXAMPLE = "Create a project plan for migrating our CRM to Salesforce for a 50-person sales team over 4 months.";
+    const COMPLEX_EXAMPLE = "Need something for the board about Q3 problems. Make it short but also very detailed. Include a budget but I don't have numbers. Not sure if it should be a report or a proposal. Also needs a risk section and an action list for the team.";
+
+    const requestInput = document.getElementById("requestInput");
+    const charCount = document.getElementById("charCount");
+    const btnGenerate = document.getElementById("btnGenerate");
+    const statusBox = document.getElementById("statusBox");
+    const errorBox = document.getElementById("errorBox");
+    const errorMessage = document.getElementById("errorMessage");
+    const resultContainer = document.getElementById("resultContainer");
+
+    document.getElementById("btnStandard").addEventListener("click", () => {
+      requestInput.value = STANDARD_EXAMPLE;
+      updateCharCount();
+      requestInput.focus();
+    });
+
+    document.getElementById("btnComplex").addEventListener("click", () => {
+      requestInput.value = COMPLEX_EXAMPLE;
+      updateCharCount();
+      requestInput.focus();
+    });
+
+    requestInput.addEventListener("input", updateCharCount);
+
+    function updateCharCount() {
+      const len = requestInput.value.length;
+      charCount.textContent = len + " / 2000";
+      if (len > 1900) {
+        charCount.classList.add("limit-near");
+      } else {
+        charCount.classList.remove("limit-near");
+      }
+    }
+
+    function setLoading(isLoading) {
+      btnGenerate.disabled = isLoading;
+      requestInput.disabled = isLoading;
+      statusBox.style.display = isLoading ? "flex" : "none";
+      if (isLoading) {
+        errorBox.style.display = "none";
+        resultContainer.style.display = "none";
+      }
+    }
+
+    function renderError(message) {
+      errorMessage.textContent = message;
+      errorBox.style.display = "block";
+      resultContainer.style.display = "none";
+    }
+
+    function renderResult(data) {
+      document.getElementById("resTitle").textContent = data.title;
+      document.getElementById("resDocType").textContent = data.doc_type.replace("_", " ");
+      document.getElementById("resSummary").textContent = data.summary;
+
+      const assumptionsList = document.getElementById("resAssumptions");
+      assumptionsList.innerHTML = "";
+      if (data.assumptions && data.assumptions.length > 0) {
+        data.assumptions.forEach(item => {
+          const li = document.createElement("li");
+          li.textContent = item;
+          assumptionsList.appendChild(li);
+        });
+      } else {
+        const li = document.createElement("li");
+        li.textContent = "No explicit assumptions were required.";
+        assumptionsList.appendChild(li);
+      }
+
+      const tasksBody = document.getElementById("resTasksBody");
+      tasksBody.innerHTML = "";
+      if (data.tasks) {
+        data.tasks.forEach(task => {
+          const tr = document.createElement("tr");
+
+          const tdId = document.createElement("td");
+          tdId.textContent = task.id;
+
+          const tdTitle = document.createElement("td");
+          tdTitle.textContent = task.title;
+
+          const tdStatus = document.createElement("td");
+          const dot = document.createElement("span");
+          dot.className = "status-dot " + (task.status === "done" ? "status-done" : "status-failed");
+          tdStatus.appendChild(dot);
+          tdStatus.appendChild(document.createTextNode(task.status));
+
+          tr.appendChild(tdId);
+          tr.appendChild(tdTitle);
+          tr.appendChild(tdStatus);
+          tasksBody.appendChild(tr);
+        });
+      }
+
+      const reviewSummary = document.getElementById("resReview");
+      const reviewIssues = document.getElementById("resReviewIssues");
+      reviewIssues.innerHTML = "";
+      if (data.review) {
+        reviewSummary.textContent = data.review.summary;
+        if (data.review.issues && data.review.issues.length > 0) {
+          data.review.issues.forEach(iss => {
+            const li = document.createElement("li");
+            li.textContent = "Section " + iss.section_id + ": " + iss.issue + " (" + iss.suggested_fix + ")";
+            reviewIssues.appendChild(li);
+          });
+        }
+      }
+
+      const providersEl = document.getElementById("resProviders");
+      providersEl.textContent = "Providers used: " + (data.providers_used ? data.providers_used.join(", ") : "none");
+
+      const warningBox = document.getElementById("resIncompleteWarning");
+      const warningText = document.getElementById("resIncompleteText");
+      if (data.complete === false) {
+        const failedTasks = (data.tasks || []).filter(t => t.status === "failed");
+        const failedNames = failedTasks.map(t => t.title).join(", ");
+        warningText.textContent = "The following sections failed to generate: " + (failedNames || "Unknown sections") + ". The document is partially complete.";
+        warningBox.style.display = "block";
+      } else {
+        warningBox.style.display = "none";
+      }
+
+      const downloadLink = document.getElementById("resDownloadLink");
+      downloadLink.href = data.download_url;
+
+      resultContainer.style.display = "block";
+    }
+
+    async function handleSubmit() {
+      const text = requestInput.value.trim();
+      if (!text) {
+        renderError("Request text cannot be empty.");
+        return;
+      }
+      if (text.length < 10) {
+        renderError("Request text is too short (minimum 10 characters).");
+        return;
+      }
+
+      setLoading(true);
+
+      try {
+        const response = await fetch("/agent", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ request: text }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          const detail = typeof data.detail === "string" ? data.detail : JSON.stringify(data.detail);
+          renderError(detail || "An error occurred while generating the document.");
+        } else {
+          renderResult(data);
+        }
+      } catch (err) {
+        renderError("Network error: " + err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+  </script>
+</body>
+</html>
+
